@@ -34,7 +34,7 @@
         <plugins.version>3.6.1</plugins.version>
         <mojo.version>2.5</mojo.version>
         <axis2.version>1.7.5</axis2.version>
-        <digidoc4j.version>1.0.7.beta.2</digidoc4j.version>
+        <digidoc4j.version>1.0.6</digidoc4j.version>
     </properties>
 
     <dependencies>
@@ -62,6 +62,22 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>${basedir}/src</sourceDirectory>
+        <testSourceDirectory>${basedir}/test</testSourceDirectory>
+        <scriptSourceDirectory>${basedir}/resources</scriptSourceDirectory>
+
+        <resources>
+            <resource>
+                <directory>${basedir}/resources</directory>
+            </resource>
+        </resources>
+
+        <testResources>
+            <testResource>
+                <directory>${basedir}/resources</directory>
+            </testResource>
+        </testResources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
