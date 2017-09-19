@@ -8,7 +8,7 @@
     <artifactId>mIDwDD4J</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>mIDwDD4J</name>
-    <description></description>
+    <description>Create DD4J container if you use mobil ID</description>
     <url>https://github.com/open-eid/dmIDwDD4J</url>
     <licenses>
         <license>
@@ -31,28 +31,34 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <project.encoding>UTF-8</project.encoding>
         <junit.version>4.11</junit.version>
+        <plugins.version>3.6.1</plugins.version>
+        <mojo.version>2.5</mojo.version>
+        <axis2.version>1.7.5</axis2.version>
+        <digidoc4j.version>1.0.7.beta.2</digidoc4j.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.digidoc4j</groupId>
+            <artifactId>digidoc4j</artifactId>
+            <version>${digidoc4j.version}</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.axis2</groupId>
             <artifactId>axis2-wsdl2code-maven-plugin</artifactId>
             <version>1.7.5</version>
         </dependency>
-
         <dependency>
             <groupId>com.sun.xml.ws</groupId>
             <artifactId>jaxws-rt</artifactId>
             <version>2.2.10</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -60,7 +66,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>${plugins.version}</version>
                 <configuration>
                     <encoding>${project.encoding}</encoding>
                     <source>${maven.compiler.source}</source>
@@ -70,7 +76,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
-                <version>2.5</version>
+                <version>${mojo.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -81,9 +87,8 @@
                 </executions>
                 <configuration>
                     <keep>true</keep>
-                    <target>2.0</target>
                     <packageName>ws.mid.gen</packageName>
-                    <sourceDestDir>src/main/java</sourceDestDir>
+                    <sourceDestDir>${basedir}/src</sourceDestDir>
                     <wsdlDirectory>wsdl</wsdlDirectory>
                     <wsdlFiles>
                         <wsdlFile>mid.wsdl</wsdlFile>
@@ -94,7 +99,7 @@
             <plugin>
                 <groupId>org.apache.axis2</groupId>
                 <artifactId>axis2-wsdl2code-maven-plugin</artifactId>
-                <version>1.7.5</version>
+                <version>${axis2.version}</version>
                 <executions>
                     <execution>
                         <id>dds.wsdl</id>
@@ -107,7 +112,7 @@
                             <databindingName>adb</databindingName>
                             <wsdlFile>${basedir}/wsdl/dds.wsdl</wsdlFile>
                             <skipBuildXML>true</skipBuildXML>
-                            <outputDirectory>src/main/java</outputDirectory>
+                            <outputDirectory>${basedir}</outputDirectory>
                             <overWrite>true</overWrite>
                             <syncMode>sync</syncMode>
                             <namespaceURIs>
@@ -120,7 +125,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
