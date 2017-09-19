@@ -8,7 +8,7 @@
     <artifactId>mIDwDD4J</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>mIDwDD4J</name>
-    <description>Create DD4J container if you use mobil ID</description>
+    <description>How to sign DD4J container with Estonian Mobile ID</description>
     <url>https://github.com/open-eid/dmIDwDD4J</url>
     <licenses>
         <license>

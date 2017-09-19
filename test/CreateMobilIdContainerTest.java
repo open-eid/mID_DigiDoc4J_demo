@@ -18,6 +18,35 @@ import java.security.cert.X509Certificate;
 
 import static org.junit.Assert.assertTrue;
 
+/**
+
+ How to sign DD4J container with Estonian Mobile ID
+ https://github.com/open-eid/digidoc4j/wiki
+
+ It is possible to sign BDOC, ASIC-E and DDOC containers with Mobile ID DigiDoc Service by using
+ two step external signing process.
+
+ Here's an example of doing two step external signing
+ Signer's certificate can be retrieved by using DigiDocService GetMobileCertificate request
+ Digest can be signed using MobileIdService MobileSignHashRequest request
+ DigiDocService can be used with the following steps:
+
+ 1. Get the Mobile ID user's signer certificate (GetMobileCertificate request in DigiDocService)
+ 2. Create a container to be signed (using ContainerBuilder)
+ 3. Calculate digest to be signed (dataToSign.getDigestToSign())
+ 4. Sign the digest with Mobile ID (using MobileSignHash and GetMobileSignHashStatus requests
+ in MobileIdServices)
+ 5. Finalize the signature (dataToSign.finalize(signatureValue))
+ 6. Add the signature to the container (container.addSignature(signature))
+
+ The use of DigiDocService MobileCreateSignature is deprecated and the signature response as a
+ full XAdES signature cannot be added to BDOC/ASIC-E containers. Do not use it
+ See the full DigiDocService specification and WSDL
+
+ You need to request separate permissions from SK (Sertifitseerimiskeskus) to access the
+ GetMobileCertificate and MobileSignHashRequest services. These two calls need special permissions
+ in addition to the rest of the Mobile ID access.
+ */
 public class CreateMobilIdContainerTest {
 
     private final String DICI_DOC_TARGET_ENDPOINT = "https://tsp.demo.sk.ee/";
@@ -54,12 +83,15 @@ public class CreateMobilIdContainerTest {
         deleteContainer();
     }
 
-
+    /**
+     * Create DD4J container with mobil ID
+     *
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
     @Test
     public void testCreateContainerWithMobile() throws IOException, ParserConfigurationException, SAXException {
-
-        Configuration configuration = new Configuration(Configuration.Mode.TEST);
-        configuration.setTslLocation(TSL_LOCATION);
 
         //Create a container with a text file to be signed
         Container container = ContainerBuilder.
@@ -68,7 +100,7 @@ public class CreateMobilIdContainerTest {
                 withConfiguration(configuration).
                 build();
 
-        //Get the certificate (with a browser plugin, for example)
+        //Get the certificate
         X509Certificate signingCert = getSignerCertForMobilId();
 
         //Get the data to be signed by the user
@@ -79,9 +111,10 @@ public class CreateMobilIdContainerTest {
                 withSignatureProfile(SignatureProfile.LT).
                 buildDataToSign();
 
+        //Sign the digest
         byte[] signatureValue = signDigestSomewhereRemotely(dataToSign, HashType.SHA_256);
 
-
+        //Finalize the signature with OCSP response and timestamp (or timemark)
         Signature signature = dataToSign.finalize(signatureValue);
 
         //Add signature to the container
@@ -106,6 +139,12 @@ public class CreateMobilIdContainerTest {
         return signatureValue;
     }
 
+    /**
+     * Use GetMobileSignHashStatus request in MobileIdService
+     *
+     * @param sessionIdType
+     * @return
+     */
     private byte[] getSignature(String sessionIdType) {
 
         GetMobileSignHashStatusRequest mobileSignHashStatusRequest = new GetMobileSignHashStatusRequest();
@@ -116,6 +155,13 @@ public class CreateMobilIdContainerTest {
         return mobileSignHashStatusResponse.getSignature();
     }
 
+    /**
+     * Sign the digest with Mobile ID (using MobileSignHash request in MobileIdService)
+     *
+     * @param dataToSign
+     * @param hashType
+     * @return
+     */
     private String getMobileSignHash(DataToSign dataToSign, HashType hashType) {
 
         String hash = DatatypeConverter.printHexBinary(dataToSign.getDigestToSign());
@@ -133,13 +179,16 @@ public class CreateMobilIdContainerTest {
         MobileSignHashResponse mobileSignHashResponse =  mobileId.mobileSignHash(mobileSignHashRequest);
 
         return mobileSignHashResponse.getSesscode();
-
     }
 
+    /**
+     * Get the Mobile ID user's signer certificate (GetMobileCertificate request in DigiDocService)
+     *
+     * @return
+     */
     private X509Certificate getSignerCertForMobilId(){
 
         try {
-
             GetMobileCertificate mobileCertificate = new GetMobileCertificate();
             mobileCertificate.setIDCode(ID_CODE);
             mobileCertificate.setCountry(COUNTRY);
@@ -154,15 +203,23 @@ public class CreateMobilIdContainerTest {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
+    /**
+     * Check if test container exist
+     *
+     * @return
+     */
     private boolean isTestContainerExist(){
         File file = new File(SAVE_AS_FILE);
         return file.exists();
     }
 
+    /**
+     * Delete test container
+     *
+     */
     private void deleteContainer(){
 
         File file = new File(SAVE_AS_FILE);
