@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
 
  How to sign DD4J container with Estonian Mobile ID
  https://github.com/open-eid/digidoc4j/wiki
+ https://github.com/open-eid/digidoc4j/wiki/Questions-&-Answers#how-to-sign-with-estonian-mobile-id
+ http://sk-eid.github.io/dds-documentation/api/api_docs/#digital-signature-api
 
  It is possible to sign BDOC, ASIC-E and DDOC containers with Mobile ID DigiDoc Service by using
  two step external signing process.
@@ -112,7 +114,7 @@ public class CreateMobilIdContainerTest {
                 buildDataToSign();
 
         //Sign the digest
-        byte[] signatureValue = signDigestSomewhereRemotely(dataToSign, HashType.SHA_256);
+        byte[] signatureValue = signDigest(dataToSign, HashType.SHA_256);
 
         //Finalize the signature with OCSP response and timestamp (or timemark)
         Signature signature = dataToSign.finalize(signatureValue);
@@ -132,7 +134,7 @@ public class CreateMobilIdContainerTest {
         deleteContainer();
     }
 
-    private byte[] signDigestSomewhereRemotely(DataToSign dataToSign, HashType hashType) {
+    private byte[] signDigest(DataToSign dataToSign, HashType hashType) {
 
         String sessionIdType = getMobileSignHash(dataToSign, hashType);
         byte[] signatureValue = getSignature(sessionIdType);
