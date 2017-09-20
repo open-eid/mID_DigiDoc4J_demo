@@ -33,7 +33,6 @@
         <junit.version>4.11</junit.version>
         <plugins.version>3.6.1</plugins.version>
         <mojo.version>2.5</mojo.version>
-        <axis2.version>1.7.6</axis2.version>
         <digidoc4j.version>1.0.6</digidoc4j.version>
     </properties>
 
@@ -48,21 +47,6 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-adb</artifactId>
-            <version>${axis2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-transport-local</artifactId>
-            <version>${axis2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.axis2</groupId>
-            <artifactId>axis2-transport-http</artifactId>
-            <version>${axis2.version}</version>
         </dependency>
     </dependencies>
 
@@ -108,43 +92,14 @@
                 </executions>
                 <configuration>
                     <keep>true</keep>
-                    <packageName>ws.mid.gen</packageName>
+                    <packageName>ws.gen</packageName>
                     <sourceDestDir>${basedir}/src</sourceDestDir>
                     <wsdlDirectory>wsdl</wsdlDirectory>
                     <wsdlFiles>
                         <wsdlFile>mid.wsdl</wsdlFile>
+                        <wsdlFile>dds_literal.wsdl</wsdlFile>
                     </wsdlFiles>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.axis2</groupId>
-                <artifactId>axis2-wsdl2code-maven-plugin</artifactId>
-                <version>${axis2.version}</version>
-                <executions>
-                    <execution>
-                        <id>dds.wsdl</id>
-                        <goals>
-                            <goal>wsdl2code</goal>
-                        </goals>
-                        <configuration>
-                            <unpackClasses>true</unpackClasses>
-                            <packageName>ws.dds.service</packageName>
-                            <databindingName>adb</databindingName>
-                            <wsdlFile>${basedir}/wsdl/dds.wsdl</wsdlFile>
-                            <skipBuildXML>true</skipBuildXML>
-                            <outputDirectory>${basedir}</outputDirectory>
-                            <overWrite>true</overWrite>
-                            <syncMode>sync</syncMode>
-                            <namespaceURIs>
-                                <namespaceURI>
-                                    <uri>http://www.sk.ee/DigiDocService/DigiDocService_2_3.wsdl</uri>
-                                    <packageName>ws.dds.gen</packageName>
-                                </namespaceURI>
-                            </namespaceURIs>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

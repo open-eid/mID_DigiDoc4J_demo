@@ -1,19 +1,15 @@
 import eu.europa.esig.dss.DSSUtils;
-import org.apache.axis2.AxisFault;
 import org.digidoc4j.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
-import ws.dds.gen.GetMobileCertificate;
-import ws.dds.gen.GetMobileCertificateResponse;
-import ws.dds.service.DigiDocServiceStub;
-import ws.mid.gen.*;
+import ws.gen.*;
 
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.ws.Holder;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 
 import static org.junit.Assert.assertTrue;
@@ -26,9 +22,9 @@ import static org.junit.Assert.assertTrue;
  full XAdES signature cannot be added to BDOC/ASIC-E containers. Do not use it
  See the full DigiDocService specification and WSDL
 
- https://github.com/open-eid/digidoc4j/wiki
- https://github.com/open-eid/digidoc4j/wiki/Questions-&-Answers#how-to-sign-with-estonian-mobile-id
- http://sk-eid.github.io/dds-documentation/api/api_docs/#digital-signature-api
+ http://www.id.ee/index.php?id=30340
+ mid.wsdl: https://digidocservice.sk.ee/v2/mid.wsdl
+ dds_literal.wsdl: https://tsp.demo.sk.ee/dds_literal.wsdl
 
  It is possible to sign BDOC, ASIC-E and DDOC containers with Mobile ID DigiDoc Service by using
  two step external signing process.
@@ -49,16 +45,22 @@ import static org.junit.Assert.assertTrue;
  You need to request separate permissions from SK (Sertifitseerimiskeskus) to access the
  GetMobileCertificate and MobileSignHashRequest services. These two calls need special permissions
  in addition to the rest of the Mobile ID access.
+
+ https://github.com/open-eid/digidoc4j/wiki
+ https://github.com/open-eid/digidoc4j/wiki/Questions-&-Answers#how-to-sign-with-estonian-mobile-id
+ http://sk-eid.github.io/dds-documentation/api/api_docs/#digital-signature-api
+
+ Test numbers:
+ http://www.id.ee/?id=36373
+
  */
 public class CreateMobilIdContainerTest {
-
-    private final String DICI_DOC_TARGET_ENDPOINT = "https://tsp.demo.sk.ee/";
 
     private final String ID_CODE = "11412090004";
     private final String PHONE_NUMBER = "+37200000766";
     private final String MESSAGE_TO_DISPLAY= "Test";
     private final String SERVICE_NAME = "Testimine";
-    private final String RETURN_CERT_DATA = "bothRSA";
+    private final String RETURN_CERT_DATA = "signRSA";
     private final String COUNTRY = "EE";
 
     private final String SAVE_AS_FILE = "testFiles/test-MobilIdContainer.bdoc";
@@ -69,16 +71,17 @@ public class CreateMobilIdContainerTest {
     private final String TSL_LOCATION = "https://open-eid.github.io/test-TL/tl-mp-test-EE.xml";
 
     private MobileId mobileId;
-    private DigiDocServiceStub digiDocServiceStub;
+    private DigiDocServicePortType digiDocServicePortType;
     private Configuration configuration;
 
 
     @Before
-    public void setUp() throws AxisFault {
+    public void setUp(){
         MobileIdService mobileIdService = new MobileIdService();
         mobileId = mobileIdService.getMobileIdService();
 
-        digiDocServiceStub = new DigiDocServiceStub(DICI_DOC_TARGET_ENDPOINT);
+        DigiDocService digiDocService = new DigiDocService();
+        digiDocServicePortType = digiDocService.getDigiDocService();
 
         configuration = new Configuration(Configuration.Mode.TEST);
         configuration.setTslLocation(TSL_LOCATION);
@@ -94,7 +97,7 @@ public class CreateMobilIdContainerTest {
      * @throws SAXException
      */
     @Test
-    public void testCreateContainerWithMobile() throws IOException, ParserConfigurationException, SAXException {
+    public void testCreateContainerWithMobile() {
 
         //Create a container with a text file to be signed
         Container container = ContainerBuilder.
@@ -191,22 +194,21 @@ public class CreateMobilIdContainerTest {
      */
     private X509Certificate getSignerCertForMobilId(){
 
-        try {
-            GetMobileCertificate mobileCertificate = new GetMobileCertificate();
-            mobileCertificate.setIDCode(ID_CODE);
-            mobileCertificate.setCountry(COUNTRY);
-            mobileCertificate.setPhoneNo(PHONE_NUMBER);
-            mobileCertificate.setReturnCertData(RETURN_CERT_DATA);
+        final String idCode = ID_CODE;
+        final String country = COUNTRY;
+        final String phoneNo = PHONE_NUMBER;
+        final String returnCertData = RETURN_CERT_DATA;
 
-            GetMobileCertificateResponse mobileCertificateResponse = digiDocServiceStub.getMobileCertificate(mobileCertificate);
-            byte[] bytes = mobileCertificateResponse.getSignCertData().getBytes();
+        Holder<String> authCertStatus = new Holder<String>();
+        Holder<String> signCertStatus = new Holder<String>();
+        Holder<String> authCertData = new Holder<String>();
+        Holder<String> signCertData = new Holder<String>();
 
-            return DSSUtils.loadCertificate(bytes).getCertificate();
+        digiDocServicePortType.getMobileCertificate(idCode, country, phoneNo, returnCertData, authCertStatus, signCertStatus,
+                authCertData, signCertData);
 
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return null;
+        byte[] convertToDER = DSSUtils.convertToDER(signCertData.value);
+        return DSSUtils.loadCertificate(convertToDER).getCertificate();
     }
 
     /**
