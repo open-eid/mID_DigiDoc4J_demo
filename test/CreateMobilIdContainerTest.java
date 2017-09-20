@@ -21,6 +21,11 @@ import static org.junit.Assert.assertTrue;
 /**
 
  How to sign DD4J container with Estonian Mobile ID
+
+ The use of DigiDocService MobileCreateSignature is deprecated and the signature response as a
+ full XAdES signature cannot be added to BDOC/ASIC-E containers. Do not use it
+ See the full DigiDocService specification and WSDL
+
  https://github.com/open-eid/digidoc4j/wiki
  https://github.com/open-eid/digidoc4j/wiki/Questions-&-Answers#how-to-sign-with-estonian-mobile-id
  http://sk-eid.github.io/dds-documentation/api/api_docs/#digital-signature-api
@@ -40,10 +45,6 @@ import static org.junit.Assert.assertTrue;
  in MobileIdServices)
  5. Finalize the signature (dataToSign.finalize(signatureValue))
  6. Add the signature to the container (container.addSignature(signature))
-
- The use of DigiDocService MobileCreateSignature is deprecated and the signature response as a
- full XAdES signature cannot be added to BDOC/ASIC-E containers. Do not use it
- See the full DigiDocService specification and WSDL
 
  You need to request separate permissions from SK (Sertifitseerimiskeskus) to access the
  GetMobileCertificate and MobileSignHashRequest services. These two calls need special permissions
