@@ -41,12 +41,14 @@ public class CreateMobilIdContainerTest {
     private final String RETURN_CERT_DATA = "signRSA";
     private final String COUNTRY = "EE";
 
-    private final String SAVE_AS_FILE = "testFiles/test-MobilIdContainer.bdoc";
-    private final String DATA_FILE = "testFiles/test.txt";
+    private final String SAVE_AS_FILE = "src/test/resources/testFiles/test-MobilIdContainer.bdoc";
+    private final String DATA_FILE = "src/test/resources/testFiles/test.txt";
 
     private final String NIME_TYPE = "text/plain";
 
     private final String TSL_LOCATION = "https://open-eid.github.io/test-TL/tl-mp-test-EE.xml";
+    private final String SSL_TRUSTSTORE_PATH = "src/main/resources/sslca.jks";
+    private final String SSL_TRUSTSTORE_PW = "sslcakeystore";
 
     private MobileId mobileId;
     private DigiDocServicePortType digiDocServicePortType;
@@ -63,6 +65,8 @@ public class CreateMobilIdContainerTest {
 
         configuration = new Configuration(Configuration.Mode.TEST);
         configuration.setTslLocation(TSL_LOCATION);
+        configuration.setSslTruststorePath(SSL_TRUSTSTORE_PATH);
+        configuration.setSslTruststorePassword(SSL_TRUSTSTORE_PW);
 
         deleteContainer();
     }

@@ -1,14 +1,14 @@
- How to sign DD4J container with Estonian Mobile ID
+ # How to sign DD4J container with Estonian Mobile ID
  
- Project "mIDwDD4J" is an example how to sign and creates digital 
+ Project "mIDwDD4J" is an example how to sign and create digital 
  signature containers with DigiDoc4j Java library and
  Estonian Mobile ID.
  
- How to use it
-  - run pom.xml by Maven, command is: mvn clean install
+ ## How to use it
+  - run pom.xml by Maven, command is: `mvn clean install`
   - run CreateMobilIdContainerTest.testCreateContainerWithMobile() method 
    
- Instruction  
+ ## Instruction  
  http://www.id.ee/index.php?id=30340
  mid.wsdl: https://digidocservice.sk.ee/v2/mid.wsdl
  dds_literal.wsdl: https://tsp.demo.sk.ee/dds_literal.wsdl

@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mIDwDD4J</groupId>
-    <artifactId>mIDwDD4J</artifactId>
+    <groupId>org.digidoc4j</groupId>
+    <artifactId>mID-demo</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>mIDwDD4J</name>
+    <name>mID-demo</name>
     <description>How to sign DD4J container with Estonian Mobile ID</description>
-    <url>https://github.com/open-eid/dmIDwDD4J</url>
+    <url>https://github.com/open-eid/mID_DigiDoc4J_demo</url>
     <licenses>
         <license>
             <name>GNU Lesser General Public License, Version 2.1</name>
@@ -17,9 +17,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:git@github.com:open-eid/mIDwDD4J.git</connection>
-        <developerConnection>scm:git:git@github.com:open-eid/mIDwDD4J.git</developerConnection>
-        <url>https://github.com/open-eid/mIDwDD4J.git</url>
+        <connection>scm:git:git@github.com:open-eid/mID_DigiDoc4J_demo.git</connection>
+        <developerConnection>scm:git:git@github.com:open-eid/mID_DigiDoc4J_demo.git</developerConnection>
+        <url>https://github.com/open-eid/mID_DigiDoc4J_demo.git</url>
     </scm>
     <issueManagement>
         <system>Pivotal</system>
@@ -33,7 +33,7 @@
         <junit.version>4.11</junit.version>
         <plugins.version>3.6.1</plugins.version>
         <mojo.version>2.5</mojo.version>
-        <digidoc4j.version>1.0.6</digidoc4j.version>
+        <digidoc4j.version>1.0.7</digidoc4j.version>
     </properties>
 
     <dependencies>
@@ -51,19 +51,19 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>${basedir}/src</sourceDirectory>
-        <testSourceDirectory>${basedir}/test</testSourceDirectory>
-        <scriptSourceDirectory>${basedir}/resources</scriptSourceDirectory>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+        <scriptSourceDirectory>${basedir}/src</scriptSourceDirectory>
 
         <resources>
             <resource>
-                <directory>${basedir}/resources</directory>
+                <directory>${basedir}/src/main/resources</directory>
             </resource>
         </resources>
 
         <testResources>
             <testResource>
-                <directory>${basedir}/resources</directory>
+                <directory>${basedir}/src/test/resources</directory>
             </testResource>
         </testResources>
 
@@ -93,12 +93,16 @@
                 <configuration>
                     <keep>true</keep>
                     <packageName>ws.gen</packageName>
-                    <sourceDestDir>${basedir}/src</sourceDestDir>
-                    <wsdlDirectory>wsdl</wsdlDirectory>
+                    <sourceDestDir>${basedir}/src/main/java</sourceDestDir>
+                    <wsdlDirectory>src/main/resources/wsdl</wsdlDirectory>
                     <wsdlFiles>
                         <wsdlFile>mid.wsdl</wsdlFile>
                         <wsdlFile>dds_literal.wsdl</wsdlFile>
                     </wsdlFiles>
+                    <vmArgs>
+                        <vmArg>-Djavax.net.ssl.trustStore=src/main/resources/sslca.jks</vmArg>
+                        <vmArg>-Djavax.net.ssl.trustStorePassword=sslcakeystore</vmArg>
+                    </vmArgs>
                 </configuration>
             </plugin>
         </plugins>
