@@ -10,7 +10,7 @@
    
  ## Instruction  
  http://www.id.ee/index.php?id=30340
- mid.wsdl: https://digidocservice.sk.ee/v2/mid.wsdl
+ mid.wsdl: https://tsp.demo.sk.ee/v2/mid.wsdl
  dds_literal.wsdl: https://tsp.demo.sk.ee/dds_literal.wsdl
 
  It is possible to sign BDOC, ASIC-E and DDOC containers with Mobile ID DigiDoc Service by using
