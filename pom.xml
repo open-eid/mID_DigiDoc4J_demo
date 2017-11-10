@@ -96,8 +96,7 @@
                     <sourceDestDir>${basedir}/src/main/java</sourceDestDir>
                     <wsdlDirectory>src/main/resources/wsdl</wsdlDirectory>
                     <wsdlFiles>
-                        <wsdlFile>mid.wsdl</wsdlFile>
-                        <wsdlFile>dds_literal.wsdl</wsdlFile>
+/                        <wsdlFile>dds_literal.wsdl</wsdlFile>
                     </wsdlFiles>
                     <vmArgs>
                         <vmArg>-Djavax.net.ssl.trustStore=src/main/resources/sslca.jks</vmArg>
