@@ -1,16 +1,30 @@
 import eu.europa.esig.dss.DSSUtils;
+import eu.europa.esig.dss.x509.CertificateToken;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.ssl.SSLContexts;
 import org.digidoc4j.*;
+import org.digidoc4j.Signature;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import ws.gen.*;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Holder;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
 import static org.junit.Assert.assertTrue;
 
@@ -34,6 +48,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class CreateMobilIdContainerTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(CreateMobilIdContainerTest.class);
+
     private final String ID_CODE = "11412090004";
     private final String PHONE_NUMBER = "+37200000766";
     private final String MESSAGE_TO_DISPLAY= "Test";
@@ -46,9 +62,11 @@ public class CreateMobilIdContainerTest {
 
     private final String NIME_TYPE = "text/plain";
 
+    private final String JKS = "JKS";
+    private final String SSL_SOCKET_FACTORY = "com.sun.xml.internal.ws.transport.https.client.SSLSocketFactory";
     private final String TSL_LOCATION = "https://open-eid.github.io/test-TL/tl-mp-test-EE.xml";
-    private final String SSL_TRUSTSTORE_PATH = "src/main/resources/sslca.jks";
-    private final String SSL_TRUSTSTORE_PW = "sslcakeystore";
+    private final String SSL_TRUSTSTORE_PATH =  "src/main/resources/test-keystore.jks";
+    private final String SSL_TRUSTSTORE_PW = "digidoc4j-password";
 
     private MobileId mobileId;
     private DigiDocServicePortType digiDocServicePortType;
@@ -56,7 +74,29 @@ public class CreateMobilIdContainerTest {
 
 
     @Before
-    public void setUp(){
+    public void setUp()  {
+        deleteContainer();
+        setServices();
+        setSSLContext();
+    }
+
+    /**
+     * Delete test container
+     *
+     */
+    private void deleteContainer(){
+
+        File file = new File(SAVE_AS_FILE);
+        if(file.exists()){
+            file.delete();
+        }
+    }
+
+    /**
+     * Set services
+     *
+     */
+    private void setServices() {
         MobileIdService mobileIdService = new MobileIdService();
         mobileId = mobileIdService.getMobileIdService();
 
@@ -65,11 +105,61 @@ public class CreateMobilIdContainerTest {
 
         configuration = new Configuration(Configuration.Mode.TEST);
         configuration.setTslLocation(TSL_LOCATION);
-        configuration.setSslTruststorePath(SSL_TRUSTSTORE_PATH);
-        configuration.setSslTruststorePassword(SSL_TRUSTSTORE_PW);
-
-        deleteContainer();
     }
+
+    /**
+     * Create SSLContexts
+     *
+     */
+    private void setSSLContext() {
+
+        SSLSocketFactory customSslFactory = null;
+
+        try {
+            InputStream fis = new FileInputStream(SSL_TRUSTSTORE_PATH);
+            KeyStore store = KeyStore.getInstance(JKS);
+            store.load(fis, SSL_TRUSTSTORE_PW.toCharArray());
+
+            Enumeration<String> aliases = store.aliases();
+            while (aliases.hasMoreElements()) {
+                final String alias = aliases.nextElement();
+                if (store.isCertificateEntry(alias)) {
+                    Certificate certificate = store.getCertificate(alias);
+                    CertificateToken certificateToken = DSSUtils.loadCertificate(certificate.getEncoded());
+                    logger.info(certificateToken.toString());
+                }
+            }
+
+            IOUtils.closeQuietly(fis);
+
+            SSLContext sslcontext = SSLContexts.custom()
+                    .loadKeyMaterial(store, SSL_TRUSTSTORE_PW.toCharArray()).
+                            loadTrustMaterial(store, new TrustSelfSignedStrategy()).build();
+            customSslFactory = sslcontext.getSocketFactory();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableKeyException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        BindingProvider digiDocServiceBindingProvider = (BindingProvider) digiDocServicePortType;
+        digiDocServiceBindingProvider.getRequestContext().put(SSL_SOCKET_FACTORY, customSslFactory);
+
+        BindingProvider mobileIdBindingProvider = (BindingProvider) mobileId;
+        mobileIdBindingProvider.getRequestContext().put(SSL_SOCKET_FACTORY, customSslFactory);
+    }
+
 
     /**
      * Create DD4J container with mobil ID
@@ -90,6 +180,7 @@ public class CreateMobilIdContainerTest {
 
         //Get the certificate
         X509Certificate signingCert = getSignerCertForMobilId();
+        logger.info(signingCert.toString());
 
         //Get the data to be signed by the user
         DataToSign dataToSign = SignatureBuilder.
@@ -140,6 +231,9 @@ public class CreateMobilIdContainerTest {
         mobileSignHashStatusRequest.setWaitSignature(true);
 
         GetMobileSignHashStatusResponse mobileSignHashStatusResponse = mobileId.getMobileSignHashStatus(mobileSignHashStatusRequest);
+        logger.info("mobileSignHashStatus sesscode: " + mobileSignHashStatusResponse.getSesscode());
+        logger.info("mobileSignHashStatus status: " + mobileSignHashStatusResponse.getStatus().name());
+
         return mobileSignHashStatusResponse.getSignature();
     }
 
@@ -165,6 +259,8 @@ public class CreateMobilIdContainerTest {
         mobileSignHashRequest.setKeyID(KeyID.RSA);
 
         MobileSignHashResponse mobileSignHashResponse =  mobileId.mobileSignHash(mobileSignHashRequest);
+        logger.info("mobileSignHashResponse status: " + mobileSignHashResponse.getStatus());
+        logger.info("mobileSignHashResponse sesscode: " +mobileSignHashResponse.getSesscode());
 
         return mobileSignHashResponse.getSesscode();
     }
@@ -203,15 +299,4 @@ public class CreateMobilIdContainerTest {
         return file.exists();
     }
 
-    /**
-     * Delete test container
-     *
-     */
-    private void deleteContainer(){
-
-        File file = new File(SAVE_AS_FILE);
-        if(file.exists()){
-            file.delete();
-        }
-    }
 }
