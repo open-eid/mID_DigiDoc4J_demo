@@ -100,7 +100,7 @@
                         <wsdlFile>dds_literal.wsdl</wsdlFile>
                     </wsdlFiles>
                     <vmArgs>
-                        <vmArg>-Djavax.net.ssl.trustStore=src/main/resources/test-keystore.jks</vmArg>
+                        <vmArg>-Djavax.net.ssl.trustStore=keystore/keystore.jks</vmArg>
                         <vmArg>-Djavax.net.ssl.trustStorePassword=digidoc4j-password</vmArg>
                     </vmArgs>
                 </configuration>

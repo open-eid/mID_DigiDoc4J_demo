@@ -1,5 +1,6 @@
 import eu.europa.esig.dss.DSSUtils;
 import eu.europa.esig.dss.x509.CertificateToken;
+import generator.KeystoreGenerator;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContexts;
@@ -21,7 +22,6 @@ import javax.xml.ws.Holder;
 import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -62,11 +62,14 @@ public class CreateMobilIdContainerTest {
 
     private final String NIME_TYPE = "text/plain";
 
+    private final String KEYSTORE_PATH =  "keystore/keystore.jks";
+    private final String KEYSTORE_PW = "digidoc4j-password";
+
     private final String JKS = "JKS";
+
     private final String SSL_SOCKET_FACTORY = "com.sun.xml.internal.ws.transport.https.client.SSLSocketFactory";
     private final String TSL_LOCATION = "https://open-eid.github.io/test-TL/tl-mp-test-EE.xml";
-    private final String SSL_TRUSTSTORE_PATH =  "src/main/resources/test-keystore.jks";
-    private final String SSL_TRUSTSTORE_PW = "digidoc4j-password";
+
 
     private MobileId mobileId;
     private DigiDocServicePortType digiDocServicePortType;
@@ -116,9 +119,9 @@ public class CreateMobilIdContainerTest {
         SSLSocketFactory customSslFactory = null;
 
         try {
-            InputStream fis = new FileInputStream(SSL_TRUSTSTORE_PATH);
+            InputStream fis = new FileInputStream(KEYSTORE_PATH);
             KeyStore store = KeyStore.getInstance(JKS);
-            store.load(fis, SSL_TRUSTSTORE_PW.toCharArray());
+            store.load(fis, KEYSTORE_PW.toCharArray());
 
             Enumeration<String> aliases = store.aliases();
             while (aliases.hasMoreElements()) {
@@ -133,7 +136,7 @@ public class CreateMobilIdContainerTest {
             IOUtils.closeQuietly(fis);
 
             SSLContext sslcontext = SSLContexts.custom()
-                    .loadKeyMaterial(store, SSL_TRUSTSTORE_PW.toCharArray()).
+                    .loadKeyMaterial(store, KEYSTORE_PW.toCharArray()).
                             loadTrustMaterial(store, new TrustSelfSignedStrategy()).build();
             customSslFactory = sslcontext.getSocketFactory();
 
