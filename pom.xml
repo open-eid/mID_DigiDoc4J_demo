@@ -33,7 +33,7 @@
         <junit.version>4.11</junit.version>
         <plugins.version>3.6.1</plugins.version>
         <mojo.version>2.5</mojo.version>
-        <digidoc4j.version>1.0.7</digidoc4j.version>
+        <digidoc4j.version>2.0.0</digidoc4j.version>
     </properties>
 
     <dependencies>

@@ -194,7 +194,12 @@ public class CreateMobilIdContainerTest {
                 buildDataToSign();
 
         //Sign the digest
-        byte[] signatureValue = signDigest(dataToSign, HashType.SHA_256);
+        byte[] signatureValue = new byte[0];
+        try {
+            signatureValue = signDigest(dataToSign, HashType.SHA_256);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 
         //Finalize the signature with OCSP response and timestamp (or timemark)
         Signature signature = dataToSign.finalize(signatureValue);
@@ -214,7 +219,7 @@ public class CreateMobilIdContainerTest {
         deleteContainer();
     }
 
-    private byte[] signDigest(DataToSign dataToSign, HashType hashType) {
+    private byte[] signDigest(DataToSign dataToSign, HashType hashType) throws NoSuchAlgorithmException {
 
         String sessionIdType = getMobileSignHash(dataToSign, hashType);
         byte[] signatureValue = getSignature(sessionIdType);
@@ -247,10 +252,10 @@ public class CreateMobilIdContainerTest {
      * @param hashType
      * @return
      */
-    private String getMobileSignHash(DataToSign dataToSign, HashType hashType) {
+    private String getMobileSignHash(DataToSign dataToSign, HashType hashType) throws NoSuchAlgorithmException {
 
-        String hash = DatatypeConverter.printHexBinary(dataToSign.getDigestToSign());
-
+        MessageDigest sha = MessageDigest.getInstance(hashType.value());
+        String hash = DatatypeConverter.printHexBinary(sha.digest(dataToSign.getDataToSign()));
         MobileSignHashRequest mobileSignHashRequest = new MobileSignHashRequest();
         mobileSignHashRequest.setIDCode(ID_CODE);
         mobileSignHashRequest.setPhoneNo(PHONE_NUMBER);
